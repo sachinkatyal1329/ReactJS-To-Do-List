@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <script src="https://unpkg.com/react@15.4.0/dist/react.js"></script>
+    <script src="https://unpkg.com/react-dom@15.4.0/dist/react-dom.js"></script>
+    <meta charset="UTF-8">
+    <title>State</title>
+</head>
+<body>
+
+<div id = "test"></div>
+
+<script src = "cookieHandler.js"></script> <script type = "text/babel">
+
+    var secondEditing;
+    var Comment = React.createClass({
+
+        getInitialState: function() {
+            return {editing: false}
+        },
+
+        edit: function() {
+            this.setState({editing: true});
+        },
+
+        save: function() {
+            var val = this.refs.newText.value;
+            this.props.updateComment(val, this.props.index);
+            this.setState({editing: false});
+            if(secondEditing == false) {
+                storeValue(getValue());
+            }else {
+                secondEditing = false;
+            }
+        },
+
+        renderNormal: function() {
+            return (
+                    <div className="task">
+                        <div className="taskName" id = "noteText">{this.props.children}</div>
+                        <button className="edit" onClick={this.edit}>Edit</button>
+                        <button className="remove" onClick={this.remove}>Remove</button>
+                    </div>
+            );``
+        },
+
+        renderForm: function() {
+            return (
+                    <div className = "task" classID = "saveTask">
+                        <textarea ref = "newText" className = "text" id ="newNote" defaultValue={this.props.children}></textarea>
+                        <button className = "save" onClick={this.save}>Save</button>
+                    </div>
+            );
+        },
+
+        remove: function() {
+            this.props.deleteComment(this.props.index);
+        },
+
+        render: function() {
+            if(this.state.editing) {
+                return this.renderForm();
+            }else {
+                return this.renderNormal();
+            }
+        }
+    });
+
+    var Board = React.createClass({
+
+        getInitialState: function() {
+            return {
+                comments: createCookieArr()
+            };
+        },
+
+        add: function(text) {
+            var arr = this.state.comments;
+            arr.unshift(text);
+            this.setState({comments: arr});
+        },
+
+        removeComment: function(i) {
+
+            var commentList = "";
+
+            var arr = this.state.comments;
+            arr.splice(i, 1);
+
+            for(var i = 0; i < arr.length; i++) {
+                if(i == 0) commentList += arr[i];
+                else commentList += "," + arr[i];
+            }
+            createCookie("Array", commentList, 200);
+            this.setState({comments: arr});
+        },
+
+        updateComment: function(newText, i) {
+            var commentList = "";
+
+            var arr = this.state.comments;
+            arr[i] = newText;
+
+            for(var i = 0; i < arr.length; i++) {
+                if(i == 0) commentList += arr[i];
+                else commentList += "," + arr[i];
+            }
+            createCookie("Array", commentList, 200);
+
+            this.setState({comments: arr});
+
+            secondEditing = true;
+
+        },
+
+        eachComment: function(item, i) {
+            return(
+                    <Comment key = {i} index = {i} updateComment = {this.updateComment} deleteComment = {this.removeComment}>{item}</Comment>
+            );
+
+        },
+
+        render: function() {
+            return(
+                    <div>
+                        <div className = "parent">
+                            <button  className="addNew" onClick={this.add.bind(null, "New Note")}>+</button>
+                            {this.state.comments.map(this.eachComment)}</div>
+                    </div>
+            );
+        }
+
+    });
+
+    ReactDOM.render(<Board />, document.getElementById('test'));
+</script>
+
+</body>
+</html>
